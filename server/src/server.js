@@ -19,6 +19,7 @@ async function main() {
   app.use("/api", publicRatesRouter);
   app.use("/api", adminRatesRouter);
 
+  app.get("/", (_req, res) => res.json({ message: "Welcome to the Currency Exchange Rates API" }));
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
   app.listen(PORT, () => {
