@@ -4,12 +4,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 /**
  * PriceCell
  * ------------------------------------------------------
- * Premium price display used for Buy / Sell values.
- *
- * - Larger typography
- * - Bigger trend arrows
- * - More spacing
- * - Flash animation on price updates
+ * Premium jewellery style price display.
  * ------------------------------------------------------
  */
 export default function PriceCell({ value, subLabel, size = "lg" }) {
@@ -18,12 +13,10 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
 
   useEffect(() => {
     if (previousValue.current !== value) {
-      const direction = value > previousValue.current ? "up" : "down";
-
-      setFlash(direction);
+      setFlash(value > previousValue.current ? "up" : "down");
       previousValue.current = value;
 
-      const timeout = setTimeout(() => setFlash(null), 600);
+      const timeout = setTimeout(() => setFlash(null), 700);
 
       return () => clearTimeout(timeout);
     }
@@ -38,35 +31,50 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
 
   const textSize =
     size === "lg"
-      ? "text-2xl sm:text-3xl lg:text-4xl"
+      ? "text-3xl sm:text-4xl lg:text-5xl"
       : size === "md"
-      ? "text-lg sm:text-xl lg:text-2xl"
-      : "text-xl sm:text-2xl";
+      ? "text-2xl sm:text-3xl"
+      : "text-[2rem] sm:text-4xl";
 
   return (
     <div
-      className={`flex flex-col items-center rounded-lg px-3 py-2 transition-colors sm:px-4 sm:py-3 ${flashClass}`}
+      className={`rounded-xl px-4 py-3 transition-all duration-300 ${flashClass}`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         {flash === "up" && (
-          <ArrowUp className="h-5 w-5 text-emerald-400 sm:h-6 sm:w-6" />
+          <ArrowUp className="h-5 w-5 text-emerald-400 animate-pulse" />
         )}
 
         {flash === "down" && (
-          <ArrowDown className="h-5 w-5 text-red-400 sm:h-6 sm:w-6" />
+          <ArrowDown className="h-5 w-5 text-red-400 animate-pulse" />
         )}
 
         <span
-          className={`font-display font-extrabold tracking-tight text-gold-100 ${textSize}`}
+          className={`
+            font-display
+            font-extrabold
+            tracking-tight
+            leading-none
+            bg-gradient-to-b
+            from-yellow-100
+            via-yellow-300
+            to-yellow-500
+            bg-clip-text
+            text-transparent
+            drop-shadow-[0_2px_10px_rgba(255,215,0,0.25)]
+            ${textSize}
+          `}
         >
-          {value.toLocaleString("en-IN")}
+          ₹{value.toLocaleString("en-IN")}
         </span>
       </div>
 
       {subLabel && (
-        <span className="mt-1 font-body text-xs font-medium text-gold-400/70 sm:text-sm">
-          {subLabel}
-        </span>
+        <div className="mt-2 text-center">
+          <span className="font-body text-xs text-gold-400/70 sm:text-sm">
+            {subLabel}
+          </span>
+        </div>
       )}
     </div>
   );

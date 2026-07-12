@@ -5,67 +5,75 @@ import TrendIndicator from "./TrendIndicator.jsx";
 /**
  * RateRow
  * ------------------------------------------------------
- * Renders a single commodity's pricing data.
- *
- * Two visual variants are supported so the same data
- * source can power both the desktop table and the
- * mobile card layout without duplicating logic:
- *  - variant="row"  -> rendered as a <tr> (desktop/tablet)
- *  - variant="card" -> rendered as a bordered card (mobile)
- *
- * Note: Low/High are intentionally not displayed per
- * request — only Buy, Sell, Trend and Status are shown.
+ * Premium jewellery style rate card.
  * ------------------------------------------------------
  */
 export default function RateRow({ rate, variant = "row" }) {
-  const { name, buy, sell, previousClose, status } = rate;
+  const { name, sell, previousClose, status } = rate;
 
+  // ==========================
+  // Mobile Card
+  // ==========================
   if (variant === "card") {
     return (
-      <div className="rounded-xl border border-gold-700/40 bg-brown-800/60 px-4 py-5 shadow-lg shadow-black/40">
-        <div className="mb-1 flex items-center justify-between">
-          <h3 className="font-display text-lg font-semibold text-gold-100">{name}</h3>
+      <div className="rounded-xl border border-gold-700/40 bg-brown-800/60 px-5 py-4 shadow-lg shadow-black/40">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-display text-xl font-bold tracking-wide text-gold-100">
+            {name}
+          </h3>
+
           <StatusBadge status={status} />
         </div>
-        <div className="grid grid-cols-2 gap-4 border-t border-gold-700/20 pt-2">
+
+        {/* Price */}
+        <div className="border-t border-gold-700/20 py-5">
           <div className="flex flex-col items-center">
-            <span className="font-display text-sm uppercase tracking-wider text-gold-500">
-              Buy
-            </span>
-            <PriceCell value={buy} size="sm" />
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="font-display text-sm uppercase tracking-wider text-gold-500">
-              Sell
-            </span>
             <PriceCell value={sell} size="sm" />
+
+            <span className="mt-2 font-body text-sm tracking-wide text-gold-400/80">
+              Today's Rate
+            </span>
           </div>
         </div>
-        <div className="mt-3 border-t border-gold-700/10 pt-3">
-          <TrendIndicator currentPrice={buy} previousClose={previousClose} />
+
+        {/* Trend */}
+        <div className="border-t border-gold-700/10 pt-3">
+          <TrendIndicator
+            currentPrice={sell}
+            previousClose={previousClose}
+          />
         </div>
       </div>
     );
   }
 
-  // Default: table row for desktop / tablet
+  // ==========================
+  // Desktop Table
+  // ==========================
   return (
     <tr className="border-b border-gold-700/20 bg-brown-900/40 transition-colors hover:bg-brown-700/40">
-      <td className="px-4 py-3 sm:px-6 sm:py-4">
-        <span className="font-display text-lg font-semibold text-gold-100 sm:text-base">
+      {/* Commodity */}
+      <td className="px-6 py-4">
+        <div className="font-display text-lg font-bold text-gold-100">
           {name}
-        </span>
-        <div className="mt-1">
-          <TrendIndicator currentPrice={buy} previousClose={previousClose} />
+        </div>
+
+        <div className="mt-2">
+          <TrendIndicator
+            currentPrice={sell}
+            previousClose={previousClose}
+          />
         </div>
       </td>
-      <td className="px-2 py-3 text-center sm:px-4 sm:py-4">
-        <PriceCell value={buy} />
-      </td>
-      <td className="px-2 py-3 text-center sm:px-4 sm:py-4">
+
+      {/* Today's Rate */}
+      <td className="px-4 py-4 text-center">
         <PriceCell value={sell} />
       </td>
-      <td className="px-4 py-3 text-center sm:px-6 sm:py-4">
+
+      {/* Status */}
+      <td className="px-6 py-4 text-center">
         <StatusBadge status={status} />
       </td>
     </tr>

@@ -1,20 +1,9 @@
-import { Gem } from "lucide-react";
+import logo from "../../src/SR-logo.png";
 
 /**
  * ShopBanner
  * ------------------------------------------------------
  * Premium jewellery/refinery branding.
- *
- * Mobile:
- * - Bigger logo
- * - Bigger shop name
- * - Compact spacing
- *
- * Desktop:
- * - Large premium branding
- * - Decorative flourishes
- * - Luxury feel
- * ------------------------------------------------------
  */
 export default function ShopBanner() {
   return (
@@ -23,33 +12,24 @@ export default function ShopBanner() {
       <div className="flex items-center justify-center gap-3 sm:gap-5">
         <Flourish />
 
-        <div
-          className="
-            flex items-center justify-center
-            h-14 w-14
-            rounded-full
-            border-2 border-gold-400/70
-            bg-gradient-to-br
-            from-gold-100
-            via-gold-400
-            to-gold-700
-            shadow-xl shadow-black/50
+        {/* Logo */}
+        <img
+        src={logo}
+        alt="Siddhanath Refinery Logo"
+        className="
+          h-28 w-28
+          object-contain
+          rounded-full
 
-            sm:h-20
-            sm:w-20
-          "
-        >
-          <Gem
-            className="
-              h-8 w-8
-              text-brown-950
+          drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]
 
-              sm:h-12
-              sm:w-12
-            "
-            strokeWidth={2.2}
-          />
-        </div>
+          sm:h-40
+          sm:w-40
+
+          lg:h-48
+          lg:w-48
+        "
+      />
 
         <Flourish flip />
       </div>
@@ -88,10 +68,9 @@ export default function ShopBanner() {
       </div>
 
       {/* Tagline */}
-      <p
+      {/* <p
         className="
           mt-1
-
           font-body
           italic
 
@@ -106,7 +85,7 @@ export default function ShopBanner() {
         "
       >
         Bullion Dealers &amp; Refiners
-      </p>
+      </p> */}
     </div>
   );
 }

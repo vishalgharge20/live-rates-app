@@ -97,9 +97,9 @@ export default function AdminPanel() {
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Commodity
                 </th>
-                <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
+                {/* <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Free API Rate
-                </th>
+                </th> */}
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Online Rate
                 </th>
@@ -120,9 +120,9 @@ export default function AdminPanel() {
                   <td className="px-4 py-3 font-display font-semibold uppercase text-gold-100">
                     {c.name}
                   </td>
-                  <td className="px-4 py-3 font-price text-gold-100/80">
+                  {/* <td className="px-4 py-3 font-price text-gold-100/80">
                     &#8377;{c.freeApiRate.toLocaleString("en-IN")}
-                  </td>
+                  </td> */}
                   <td className="px-4 py-3 font-price text-gold-100/80">
                     &#8377;{c.onlineRate.toLocaleString("en-IN")}
                   </td>
