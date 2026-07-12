@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Rate } from "../models/Rate.js";
+import { fetchRawKalashFeed } from "../services/kalashRateFetcher.js";
 
 /**
  * Admin routes
@@ -21,6 +22,22 @@ router.get("/admin/rates", async (_req, res) => {
     res.json(commodities);
   } catch (err) {
     res.status(500).json({ error: "Failed to load admin rates" });
+  }
+});
+
+/**
+ * DEBUG ROUTE — hit this once deployed to see exactly what Kalash
+ * Gold's live feed returns, parsed to JSON but with NO field-name
+ * mapping applied. Use it to confirm the real tag names, then
+ * update mapKalashFeedToRates() in kalashRateFetcher.js and each
+ * commodity's `kalashItemName` in MongoDB to match.
+ */
+router.get("/admin/kalash-raw", async (_req, res) => {
+  try {
+    const raw = await fetchRawKalashFeed();
+    res.json(raw);
+  } catch (err) {
+    res.status(502).json({ error: "Failed to fetch/parse Kalash feed", detail: err.message });
   }
 });
 

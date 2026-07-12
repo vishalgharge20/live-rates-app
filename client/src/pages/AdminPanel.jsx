@@ -5,10 +5,10 @@ import { API_BASE_URL } from "../config/api.js";
 /**
  * AdminPanel
  * ------------------------------------------------------
- * Shows every commodity with three rates side by side:
+ * Shows every commodity with four rates side by side:
  *   Free API Rate  — raw calculated rate from gold-api.com
- *   Kalash Rate    — that rate with the calibration factor
- *                    applied (auto-updated, read-only here)
+ *   Online Rate    — Free API Rate x calibration constant
+ *   Kalash Rate    — fetched live from Kalash Gold's own feed
  *   Your Rate      — editable; what actually gets shown on
  *                    the public Live Rates page
  *
@@ -101,6 +101,9 @@ export default function AdminPanel() {
                   Free API Rate
                 </th>
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
+                  Online Rate
+                </th>
+                <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Kalash Rate
                 </th>
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
@@ -119,6 +122,9 @@ export default function AdminPanel() {
                   </td>
                   <td className="px-4 py-3 font-price text-gold-100/80">
                     &#8377;{c.freeApiRate.toLocaleString("en-IN")}
+                  </td>
+                  <td className="px-4 py-3 font-price text-gold-100/80">
+                    &#8377;{c.onlineRate.toLocaleString("en-IN")}
                   </td>
                   <td className="px-4 py-3 font-price text-gold-100/80">
                     &#8377;{c.kalashRate.toLocaleString("en-IN")}

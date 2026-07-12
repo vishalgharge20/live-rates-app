@@ -5,13 +5,18 @@ import fetch from "node-fetch";
  * ------------------------------------------------------
  * Talks to the free, no-API-key Gold API (https://gold-api.com)
  * to get live XAU/XAG spot prices, then converts them into
- * per-10g (gold) / per-kg (silver) prices and applies a
- * calibration factor to approximate Indian bullion rates.
+ * per-10g (gold) / per-kg (silver) prices.
  *
- * NOTE: the calibration factors below are the same rough
- * constants you were using in the frontend hook — they are
- * NOT a real market formula, just a stopgap until Kalash's
- * actual rate feed (or a paid data source) is wired in.
+ * Two numbers come out of this file:
+ *   freeApiRate — the raw calculated price, no adjustment
+ *   onlineRate  — freeApiRate with your calibration constant
+ *                 applied, so it reads closer to real Indian
+ *                 bullion-market pricing ("Online Rate" in
+ *                 the admin panel)
+ *
+ * NOTE: kalashRate is NOT calculated here anymore — it now
+ * comes from Kalash Gold's own live feed, see
+ * kalashRateFetcher.js.
  * ------------------------------------------------------
  */
 
@@ -47,7 +52,7 @@ export async function fetchSpotPrices() {
 
 /**
  * Given a commodity's config and the current spot prices,
- * returns { freeApiRate, kalashRate } — both rounded to the
+ * returns { freeApiRate, onlineRate } — both rounded to the
  * nearest rupee.
  */
 export function calculateRatesForCommodity(commodity, spotPriceByMetal) {
@@ -58,7 +63,7 @@ export function calculateRatesForCommodity(commodity, spotPriceByMetal) {
   );
 
   const calibrationFactor = metal === "XAU" ? INDIAN_GOLD_FACTOR : INDIAN_SILVER_FACTOR;
-  const kalashRate = Math.round(freeApiRate * calibrationFactor);
+  const onlineRate = Math.round(freeApiRate * calibrationFactor);
 
-  return { freeApiRate, kalashRate };
+  return { freeApiRate, onlineRate };
 }

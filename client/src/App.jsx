@@ -47,12 +47,12 @@ export default function App() {
 
             {/* Full footer on tablet/desktop; hidden on mobile to keep the
                 page fitting a single screen without scrolling */}
-            {/* <div className="hidden sm:block"> */}
+            <div className="hidden sm:block">
               <Footer />
             </div>
           </div>
         </div>
       </div>
-    // </div>
+    </div>
   );
 }

@@ -1,38 +1,69 @@
 import { Rate } from "../models/Rate.js";
 import { fetchSpotPrices, calculateRatesForCommodity } from "../services/liveRateFetcher.js";
+import { fetchKalashRates } from "../services/kalashRateFetcher.js";
 
 /**
  * refreshRatesJob
  * ------------------------------------------------------
  * Runs on an interval (see server.js). Each tick:
- *  1. Fetches the current XAU/XAG spot prices.
- *  2. For every commodity stored in MongoDB, recalculates
- *     freeApiRate and kalashRate.
- *  3. If the admin hasn't set a yourRate yet (still 0),
- *     seeds it with the kalashRate so the public page has
- *     something sensible to show before the first manual
- *     edit. Once an admin has set yourRate, this job never
- *     overwrites it — only freeApiRate/kalashRate refresh.
+ *  1. Fetches XAU/XAG spot prices -> freeApiRate + onlineRate
+ *     (onlineRate = freeApiRate x your calibration constant)
+ *  2. Fetches Kalash Gold's live XML feed -> kalashRate, matched
+ *     per-commodity via `kalashItemName`
+ *  3. If the admin hasn't set yourRate yet (still 0), seeds it
+ *     with kalashRate (falling back to onlineRate if this
+ *     commodity's kalashItemName isn't mapped/found yet).
+ *     Once an admin has set yourRate, this job never overwrites
+ *     it — only freeApiRate/onlineRate/kalashRate refresh.
+ *
+ * The Kalash feed fetch is wrapped separately so that if it's
+ * unreachable/blocked, freeApiRate/onlineRate still update —
+ * only kalashRate is skipped for that tick.
  * ------------------------------------------------------
  */
 export async function refreshRatesJob() {
+  let spotPriceByMetal;
   try {
-    const spotPriceByMetal = await fetchSpotPrices();
+    spotPriceByMetal = await fetchSpotPrices();
+  } catch (err) {
+    console.error("[rates-job] Failed to fetch gold-api.com spot prices:", err.message);
+    return; // nothing to update this tick without spot prices
+  }
+
+  let kalashRatesByItemName = {};
+  try {
+    kalashRatesByItemName = await fetchKalashRates();
+  } catch (err) {
+    console.error("[rates-job] Failed to fetch Kalash Gold feed:", err.message);
+    // Continue anyway — freeApiRate/onlineRate can still update this tick
+  }
+
+  try {
     const commodities = await Rate.find({});
 
     await Promise.all(
       commodities.map(async (commodity) => {
-        const { freeApiRate, kalashRate } = calculateRatesForCommodity(
+        const { freeApiRate, onlineRate } = calculateRatesForCommodity(
           commodity,
           spotPriceByMetal
         );
 
         commodity.freeApiRate = freeApiRate;
-        commodity.kalashRate = kalashRate;
+        commodity.onlineRate = onlineRate;
+
+        const liveKalashRate = commodity.kalashItemName
+          ? kalashRatesByItemName[commodity.kalashItemName]
+          : undefined;
+
+        if (liveKalashRate !== undefined) {
+          commodity.kalashRate = liveKalashRate;
+        }
+        // else: kalashItemName not set/matched yet — leave kalashRate as-is
+        // (likely 0 until kalashItemName is confirmed and set correctly)
 
         // Only auto-fill yourRate the very first time (admin hasn't set one yet)
         if (!commodity.yourRate) {
-          commodity.yourRate = kalashRate;
+          commodity.yourRate = commodity.kalashRate || onlineRate;
         }
 
         // First successful refresh also seeds the trend reference point
@@ -46,8 +77,6 @@ export async function refreshRatesJob() {
 
     console.log(`[rates-job] Refreshed ${commodities.length} commodities`);
   } catch (err) {
-    // Swallow errors so a temporary API outage doesn't crash the server —
-    // the next interval tick will simply try again.
-    console.error("[rates-job] Failed to refresh rates:", err.message);
+    console.error("[rates-job] Failed to save refreshed rates:", err.message);
   }
 }

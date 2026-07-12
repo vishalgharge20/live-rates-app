@@ -33,9 +33,15 @@ const rateSchema = new mongoose.Schema(
     purity: { type: Number, required: true },
     spreadPct: { type: Number, required: true, default: 0.002 },
 
+    // The exact item name used for this commodity inside Kalash
+    // Gold's live feed (matched by name, e.g. "GOLD 999 RTGS",
+    // "Gold MKT 999 [FT]" — see kalashRateFetcher.js / seed.js)
+    kalashItemName: { type: String, default: "" },
+
     // Auto-calculated prices (written by the background job)
-    freeApiRate: { type: Number, default: 0 },
-    kalashRate: { type: Number, default: 0 },
+    freeApiRate: { type: Number, default: 0 }, // raw gold-api.com price
+    onlineRate: { type: Number, default: 0 }, // freeApiRate x calibration constant
+    kalashRate: { type: Number, default: 0 }, // fetched live from Kalash Gold's feed
 
     // Admin-controlled price actually shown on the public page
     yourRate: { type: Number, default: 0 },

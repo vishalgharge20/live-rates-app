@@ -11,17 +11,21 @@ import mongoose from "mongoose";
  * slug, so existing yourRate/kalashRate values are never
  * wiped out.
  *
- * NOTE: your pasted frontend hook had dropped
- * "Gold 999 RTGS" from COMMODITY_CONFIG — it's restored
- * here since the original spec calls for all 4 commodities.
- * Remove it from the array below if that was intentional.
+ * `kalashItemName` values below are taken from a real sample
+ * of Kalash Gold's live feed you shared:
+ *   "GOLD 999 RTGS", "Gold MKT 999 [FT]",
+ *   "SILVER 999 SILLY MKT", "SILVER 99 MKT"
+ *
+ * NOTE: "SILVER 999 SILLY MKT" is copied exactly as the feed
+ * shows it (worth double-checking that's really their name for
+ * Silver 999 MKT and not a typo/different product on their end).
  * ------------------------------------------------------
  */
 const COMMODITIES = [
-  { slug: "gold-999-rtgs", name: "Gold 999 RTGS", metal: "XAU", unit: "10g", purity: 0.999, spreadPct: 0.0015 },
-  { slug: "gold-mkt-999", name: "Gold MKT 999", metal: "XAU", unit: "10g", purity: 0.999, spreadPct: 0.002 },
-  { slug: "silver-999-mkt", name: "Silver 999 MKT", metal: "XAG", unit: "kg", purity: 0.999, spreadPct: 0.001 },
-  { slug: "silver-99-mkt", name: "Silver 99 MKT", metal: "XAG", unit: "kg", purity: 0.99, spreadPct: 0.0015 },
+  { slug: "gold-999-rtgs", name: "Gold 999 RTGS", metal: "XAU", unit: "10g", purity: 0.999, spreadPct: 0.0015, kalashItemName: "GOLD 999 RTGS" },
+  { slug: "gold-mkt-999", name: "Gold MKT 999", metal: "XAU", unit: "10g", purity: 0.999, spreadPct: 0.002, kalashItemName: "Gold MKT 999 [FT]" },
+  { slug: "silver-999-mkt", name: "Silver 999 MKT", metal: "XAG", unit: "kg", purity: 0.999, spreadPct: 0.001, kalashItemName: "SILVER 999 SILLY MKT" },
+  { slug: "silver-99-mkt", name: "Silver 99 MKT", metal: "XAG", unit: "kg", purity: 0.99, spreadPct: 0.0015, kalashItemName: "SILVER 99 MKT" },
 ];
 
 async function seed() {
