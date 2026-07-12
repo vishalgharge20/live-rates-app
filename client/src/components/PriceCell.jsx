@@ -29,12 +29,19 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
       ? "animate-flash-red"
       : "";
 
+  // const textSize =
+  //   size === "lg"
+  //     ? "text-3xl sm:text-4xl lg:text-5xl"
+  //     : size === "md"
+  //     ? "text-2xl sm:text-3xl"
+  //     : "text-[2rem] sm:text-4xl";
+
   const textSize =
-    size === "lg"
-      ? "text-3xl sm:text-4xl lg:text-5xl"
-      : size === "md"
-      ? "text-2xl sm:text-3xl"
-      : "text-[2rem] sm:text-4xl";
+  size === "lg"
+    ? "text-xl sm:text-2xl lg:text-3xl"
+    : size === "md"
+    ? "text-base sm:text-lg lg:text-xl"
+    : "text-2xl sm:text-3xl"
 
   return (
     <div
