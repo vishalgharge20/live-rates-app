@@ -8,36 +8,40 @@ import { Building2, Mail, MessageCircle, Phone } from "lucide-react";
 export default function Footer() {
   return (
     <div className="border-t border-gold-600/40 bg-gradient-to-b from-brown-900 to-brown-950 px-4 py-5 sm:px-8 sm:py-8">
-      <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <FooterBlock icon={Building2} title="Our Address">
-          <p className="font-medium text-gold-100">
-            Siddhanath Refinery
-          </p>
+      <div className="flex flex-col items-center gap-8 px-4 sm:flex-row sm:justify-between sm:px-10 lg:px-16">
+        <div className="flex justify-start">
+          <FooterBlock icon={Building2} title="Our Address">
+            <p className="font-medium text-gold-100">
+              Siddhanath Refinery
+            </p>
+            <p>#000, Ground Floor</p>
+            <p>Opp XYZ Complex</p>
+            <p>Main Road, City – 000000</p>
+          </FooterBlock>
+        </div>
 
-          <p>#000, Ground Floor</p>
-          <p>Opp XYZ Complex</p>
-          <p>Main Road, City – 000000</p>
-        </FooterBlock>
-
-        <FooterBlock icon={Mail} title="Email">
+        {/* <FooterBlock icon={Mail} title="Email">
           <p className="break-all">
             info@siddhanathrefinery.com
           </p>
-        </FooterBlock>
+        </FooterBlock> */}
 
-        <FooterBlock icon={Phone} title="Contact">
+        <div className="flex justify-start sm:justify-end">
+          <FooterBlock icon={Phone} title="Contact">
+            <p>+91 90000 00000</p>
+            <p>0000-0000000</p>
+          </FooterBlock>
+        </div>
+        
+        {/* <FooterBlock icon={MessageCircle} title="WhatsApp">
           <p>+91 90000 00000</p>
-          <p>0000-0000000</p>
-        </FooterBlock>
+        </FooterBlock> */}
 
-        <FooterBlock icon={MessageCircle} title="WhatsApp">
-          <p>+91 90000 00000</p>
-        </FooterBlock>
       </div>
 
-      <div className="mt-6 border-t border-gold-700/20 pt-4 text-center text-[11px] text-gold-400/60 sm:text-sm">
+      {/* <div className="mt-6 border-t border-gold-700/20 pt-4 text-center text-[11px] text-gold-400/60 sm:text-sm">
         © {new Date().getFullYear()} Siddhanath Refinery. All rights reserved.
-      </div>
+      </div> */}
     </div>
   );
 }

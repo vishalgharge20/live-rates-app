@@ -1,20 +1,25 @@
 import { useEffect, useState } from "react";
+import PriceCell from "./PriceCell.jsx";
 import { API_BASE_URL } from "../config/api.js";
 import { pollAligned } from "../utils/pollAligned.js";
 
 /**
  * SpotRatesBar
  * ------------------------------------------------------
- * Read-only display of GOLD($), SILVER($), and INR(₹) spot
- * rates, straight from Kalash's feed. Purely informational —
- * no admin edits, no MongoDB, just whatever the backend's
- * in-memory store currently has (see spotRatesStore.js).
+ * Simplified read-only display of GOLD($), SILVER($), and
+ * INR(₹) spot rates — one number per row (the Ask price),
+ * not a bid/ask table. Reuses PriceCell so these flash green/
+ * red on change exactly like the main commodity prices.
+ *
+ * Purely informational — no admin edits, no MongoDB, just
+ * whatever the backend's in-memory store currently has
+ * (see spotRatesStore.js).
  * ------------------------------------------------------
  */
 const ROWS = [
-  { key: "gold", label: "GOLD($)" },
-  { key: "silver", label: "SILVER($)" },
-  { key: "inr", label: "INR(\u20B9)" },
+  { key: "gold", label: "GOLD ($)", prefix: "$", decimals: 2 },
+  { key: "silver", label: "SILVER ($)", prefix: "$", decimals: 2 },
+  { key: "inr", label: "INR (\u20B9)", prefix: "\u20B9", decimals: 2 },
 ];
 
 export default function SpotRatesBar() {
@@ -39,39 +44,30 @@ export default function SpotRatesBar() {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gold-700/30">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-brown-800/90">
-            <th className="px-4 py-3 text-left font-display text-xs uppercase tracking-wider text-gold-400 sm:px-6">
-              Spot Rate
-            </th>
-            <th className="px-4 py-3 text-center font-display text-xs uppercase tracking-wider text-gold-400 sm:px-6">
-              Bid
-            </th>
-            <th className="px-4 py-3 text-center font-display text-xs uppercase tracking-wider text-gold-400 sm:px-6">
-              Ask
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {ROWS.map(({ key, label }) => {
-            const rate = spotRates[key];
-            return (
-              <tr key={key} className="border-t border-gold-700/20 bg-brown-900/40">
-                <td className="px-4 py-3 font-display text-sm font-semibold text-gold-100 sm:px-6">
-                  {label}
-                </td>
-                <td className="px-4 py-3 text-center font-price text-lg font-bold text-gold-100 sm:px-6">
-                  {rate ? rate.bid.toLocaleString("en-IN") : "-"}
-                </td>
-                <td className="px-4 py-3 text-center font-price text-lg font-bold text-gold-100 sm:px-6">
-                  {rate ? rate.ask.toLocaleString("en-IN") : "-"}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="bg-brown-800/90 px-4 py-2.5 sm:px-6">
+        <span className="font-display text-xs uppercase tracking-wider text-gold-400">
+          Spot Rate
+        </span>
+      </div>
+      <div className="divide-y divide-gold-700/20">
+        {ROWS.map(({ key, label, prefix, decimals }) => {
+          const rate = spotRates[key];
+          return (
+            <div
+              key={key}
+              className="flex items-center justify-between bg-brown-900/40 px-4 py-1.5 sm:px-6"
+            >
+              <span className="font-display text-sm font-semibold text-gold-100">{label}</span>
+              <PriceCell
+                value={rate ? rate.ask : null}
+                size="sm"
+                prefix={prefix}
+                decimals={decimals}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

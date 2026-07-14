@@ -13,7 +13,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
  * only makes sense when comparing two real numbers.
  * ------------------------------------------------------
  */
-export default function PriceCell({ value, subLabel, size = "lg" }) {
+export default function PriceCell({ value, subLabel, size = "lg", prefix = "\u20B9", decimals = 0 }) {
   const [flash, setFlash] = useState(null);
   const previousValue = useRef(value);
 
@@ -42,11 +42,13 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
       : "";
 
   const textSize =
-    size === "lg"
-      ? "text-xl sm:text-2xl lg:text-3xl"
-      : size === "md"
-      ? "text-base sm:text-lg lg:text-xl"
-      : "text-2xl sm:text-3xl";
+  size === "lg"
+    ? "text-2xl sm:text-3xl lg:text-4xl"
+    : size === "md"
+    ? "text-lg sm:text-xl lg:text-2xl"
+    : size === "sm"
+    ? "text-base sm:text-lg"
+    : "text-sm sm:text-base";
 
   const hasValue = value !== null && value !== undefined;
 
@@ -77,7 +79,12 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
             ${textSize}
           `}
         >
-          {hasValue ? `₹${value.toLocaleString("en-IN")}` : "-"}
+          {hasValue
+            ? `${prefix}${value.toLocaleString("en-IN", {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              })}`
+            : "-"}
         </span>
       </div>
 
