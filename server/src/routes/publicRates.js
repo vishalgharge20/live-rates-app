@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { Rate } from "../models/Rate.js";
+import { getSpotRates } from "../services/spotRatesStore.js";
 
 /**
  * Public routes
@@ -14,6 +15,12 @@ import { Rate } from "../models/Rate.js";
  *       overridden, or it just hasn't been fetched yet)
  *   Otherwise both are set to the admin's yourRate — no spread
  *   calculation, since the site only shows one rate per row.
+ *
+ * GET /api/spot-rates
+ *   Returns the 3 forex/spot rates (GOLD($), SILVER($), INR(₹))
+ *   straight from Kalash's feed — read-only, no admin override,
+ *   refreshed by the same background job. { gold, silver, inr }
+ *   each shaped as { bid, ask } or null if not available yet.
  * ------------------------------------------------------
  */
 const router = Router();
@@ -39,6 +46,10 @@ router.get("/rates", async (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to load rates" });
   }
+});
+
+router.get("/spot-rates", (_req, res) => {
+  res.json(getSpotRates());
 });
 
 export default router;

@@ -2,6 +2,7 @@ import Header from "./components/Header.jsx";
 import ShopBanner from "./components/ShopBanner.jsx";
 import DisclaimerBanner from "./components/DisclaimerBanner.jsx";
 import RateTable from "./components/RateTable.jsx";
+import SpotRatesBar from "./components/SpotRatesBar.jsx";
 import Footer from "./components/Footer.jsx";
 import MandalaBackground from "./components/MandalaBackground.jsx";
 import { useLiveRates } from "./hooks/useLiveRates.js";
@@ -45,10 +46,21 @@ export default function App() {
 
             <RateTable rates={rates} />
 
+            {/* Reference-only spot rates (GOLD($)/SILVER($)/INR(₹)) —
+                kept visually secondary to the main commodity table
+                above: smaller heading, muted label, tucked below the
+                prices people actually care about. */}
+            <div className="px-2 pb-4 sm:px-6 sm:pb-6">
+              <p className="mb-2 font-body text-[11px] uppercase tracking-[0.15em] text-gold-500/60 sm:text-xs">
+                Reference Spot Rates
+              </p>
+              <SpotRatesBar />
+            </div>
+
             {/* Full footer on tablet/desktop; hidden on mobile to keep the
                 page fitting a single screen without scrolling */}
             {/* <div className="hidden sm:block"> */}
-              <Footer />
+            <Footer />
             {/* </div> */}
           </div>
         </div>

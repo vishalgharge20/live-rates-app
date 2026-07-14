@@ -94,6 +94,26 @@ export function mapKalashFeedToRates(rows) {
 }
 
 /**
+ * Extracts the 3 forex/spot rows (GOLD($), SILVER($), INR(₹)) from
+ * the detailed rates map — these are informational-only context
+ * rates, shown read-only with no admin override, unlike the
+ * domestic commodities.
+ */
+export function extractSpotRates(detailedRatesByItemName) {
+  const pick = (name) => {
+    const row = detailedRatesByItemName[name];
+    if (!row) return null;
+    return { bid: row.purchase, ask: row.sale };
+  };
+
+  return {
+    gold: pick("GOLD($)"),
+    silver: pick("SILVER($)"),
+    inr: pick("INR(₹)"),
+  };
+}
+
+/**
  * Convenience: fetch + parse + map, returning { [itemName]: rate }
  * where rate is `sale` (the meaningful number for domestic items),
  * falling back to `purchase` if sale is missing.
