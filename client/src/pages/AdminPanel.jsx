@@ -133,7 +133,9 @@ export default function AdminPanel() {
               </tr>
             </thead>
             <tbody>
-              {commodities.map((c) => (
+              {commodities
+                .filter((c) => c.slug !== "gold-999-rtgs")
+                .map((c) => (
                 <tr key={c.slug} className="border-t border-gold-700/20 bg-brown-900/40">
                   <td className="px-4 py-3">
                     <span className="font-display font-semibold uppercase text-gold-100">

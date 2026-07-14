@@ -5,10 +5,15 @@ import { Rate } from "../models/Rate.js";
  * Public routes
  * ------------------------------------------------------
  * GET /api/rates
- *   Returns the shape the frontend RateTable already
- *   expects: id, name, buy, sell, previousClose, status.
- *   `buy` is the admin-set yourRate; `sell` is derived from
- *   it using the commodity's spread.
+ *   Returns id, name, buy, sell, previousClose, status.
+ *
+ *   The site now only displays a single "Today's Rate" per
+ *   commodity (no separate Buy/Sell columns anymore), so
+ *   buy and sell are BOTH set to the admin's yourRate —
+ *   no spread calculation. Kept as two fields (rather than
+ *   renaming to a single `rate` field) so existing frontend
+ *   code reading either `buy` or `sell` keeps working without
+ *   changes.
  * ------------------------------------------------------
  */
 const router = Router();
@@ -17,19 +22,14 @@ router.get("/rates", async (_req, res) => {
   try {
     const commodities = await Rate.find({}).sort({ createdAt: 1 });
 
-    const publicRates = commodities.map((c) => {
-      const buy = c.yourRate;
-      const sell = Math.round(buy * (1 + c.spreadPct));
-
-      return {
-        id: c.slug,
-        name: c.name,
-        buy,
-        sell,
-        previousClose: c.previousClose,
-        status: c.status,
-      };
-    });
+    const publicRates = commodities.map((c) => ({
+      id: c.slug,
+      name: c.name,
+      buy: c.yourRate,
+      sell: c.yourRate,
+      previousClose: c.previousClose,
+      status: c.status,
+    }));
 
     res.json(publicRates);
   } catch (err) {
