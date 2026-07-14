@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Ban, CheckCircle2, RotateCcw, Save, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "../config/api.js";
-import { pollAligned } from "../utlis/pollAligned.js";
+import { pollAligned } from "../utils/pollAligned.js";
 
 /**
  * AdminPanel
