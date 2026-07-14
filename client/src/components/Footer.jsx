@@ -7,8 +7,8 @@ import { Building2, Mail, MessageCircle, Phone } from "lucide-react";
  */
 export default function Footer() {
   return (
-    <div className="border-t border-gold-600/40 bg-gradient-to-b from-brown-900 to-brown-950 px-4 py-5 sm:px-8 sm:py-8">
-      <div className="flex flex-col items-center gap-8 px-4 sm:flex-row sm:justify-between sm:px-10 lg:px-16">
+    <div className="border-t border-gold-600/40 bg-gradient-to-b from-brown-900 to-brown-950 py-5 pl-2 pr-4 sm:px-8 sm:py-8">
+      <div className="flex flex-col items-start gap-8 px-1 sm:flex-row sm:items-center sm:justify-between sm:px-10 lg:px-16">
         <div className="flex justify-start">
           <FooterBlock icon={Building2} title="Our Address">
             <p className="font-medium text-gold-100">

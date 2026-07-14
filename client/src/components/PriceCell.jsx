@@ -43,7 +43,7 @@ export default function PriceCell({ value, subLabel, size = "lg", prefix = "\u20
 
   const textSize =
   size === "lg"
-    ? "text-2xl sm:text-3xl lg:text-4xl"
+    ? "text-3xl sm:text-4xl lg:text-5xl"
     : size === "md"
     ? "text-lg sm:text-xl lg:text-2xl"
     : size === "sm"

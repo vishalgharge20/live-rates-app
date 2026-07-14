@@ -29,7 +29,7 @@ export default function RateRow({ rate, variant = "row" }) {
         {/* Price */}
         <div className="border-t border-gold-700/20 py-5">
           <div className="flex flex-col items-center">
-            <PriceCell value={sell} size="sm" />
+            <PriceCell value={sell} size="lg" />
 
             <span className="mt-2 font-body text-sm tracking-wide text-gold-400/80">
               Today's Rate
