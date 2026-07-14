@@ -6,10 +6,16 @@ import mongoose from "mongoose";
 /**
  * seed.js
  * ------------------------------------------------------
- * Run once with `npm run seed` to create the four
- * commodity documents. Safe to re-run — it upserts by
- * slug, so existing yourRate/kalashRate values are never
- * wiped out.
+ * Run with `npm run seed` to create the four commodity
+ * documents (or update their config if they already exist).
+ *
+ * Uses $set (not $setOnInsert) for these config fields, so
+ * re-running this after changing e.g. kalashItemName WILL
+ * update existing documents too. This is safe because
+ * COMMODITIES only lists static config — it never includes
+ * the runtime fields (freeApiRate, onlineRate, kalashRate,
+ * yourRate, previousClose, status), so those are never
+ * touched by this script, however many times you run it.
  *
  * `kalashItemName` values below are taken from a real sample
  * of Kalash Gold's live feed you shared:
@@ -34,10 +40,10 @@ async function seed() {
   for (const commodity of COMMODITIES) {
     await Rate.findOneAndUpdate(
       { slug: commodity.slug },
-      { $setOnInsert: commodity },
+      { $set: commodity },
       { upsert: true, new: true }
     );
-    console.log(`[seed] Ensured "${commodity.name}" exists`);
+    console.log(`[seed] Ensured "${commodity.name}" exists / config updated`);
   }
 
   await mongoose.disconnect();
