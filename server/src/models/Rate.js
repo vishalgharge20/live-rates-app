@@ -41,14 +41,24 @@ const rateSchema = new mongoose.Schema(
     // Auto-calculated prices (written by the background job)
     freeApiRate: { type: Number, default: 0 }, // raw gold-api.com price
     onlineRate: { type: Number, default: 0 }, // freeApiRate x calibration constant
-    kalashRate: { type: Number, default: 0 }, // fetched live from Kalash Gold's feed
+    // null = "no live data right now" (Kalash feed didn't have this
+    // item this tick, or it hasn't been fetched yet) — distinct from
+    // a real rate, which is always a positive number.
+    kalashRate: { type: Number, default: null },
 
     // Admin-controlled price actually shown on the public page.
     // Defaults to auto-following (kalashRate - 100) until an admin
     // manually saves a value, at which point isManualOverride flips
     // to true and the background job stops touching yourRate.
-    yourRate: { type: Number, default: 0 },
+    // null = nothing to show ("-") — either no live data yet, or
+    // manually disabled by the admin.
+    yourRate: { type: Number, default: null },
     isManualOverride: { type: Boolean, default: false },
+
+    // Admin can hard-disable a commodity — public page always shows
+    // "-" for it regardless of what Kalash or the admin's saved
+    // rate say, until re-enabled.
+    isDisabled: { type: Boolean, default: false },
 
     // Reference point for the trend indicator on the public page
     previousClose: { type: Number, default: 0 },

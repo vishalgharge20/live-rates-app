@@ -5,6 +5,12 @@ import { ArrowDown, ArrowUp } from "lucide-react";
  * PriceCell
  * ------------------------------------------------------
  * Premium jewellery style price display.
+ *
+ * When `value` is null/undefined (rate disabled, or Kalash
+ * currently has no live data for this commodity), renders a
+ * plain "-" instead of crashing on `null.toLocaleString()".
+ * No flash animation runs for that transition either — flash
+ * only makes sense when comparing two real numbers.
  * ------------------------------------------------------
  */
 export default function PriceCell({ value, subLabel, size = "lg" }) {
@@ -12,14 +18,20 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
   const previousValue = useRef(value);
 
   useEffect(() => {
-    if (previousValue.current !== value) {
+    const isRealNumber = (v) => typeof v === "number" && !Number.isNaN(v);
+
+    if (
+      isRealNumber(value) &&
+      isRealNumber(previousValue.current) &&
+      previousValue.current !== value
+    ) {
       setFlash(value > previousValue.current ? "up" : "down");
-      previousValue.current = value;
-
       const timeout = setTimeout(() => setFlash(null), 700);
-
+      previousValue.current = value;
       return () => clearTimeout(timeout);
     }
+
+    previousValue.current = value;
   }, [value]);
 
   const flashClass =
@@ -29,19 +41,14 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
       ? "animate-flash-red"
       : "";
 
-  // const textSize =
-  //   size === "lg"
-  //     ? "text-3xl sm:text-4xl lg:text-5xl"
-  //     : size === "md"
-  //     ? "text-2xl sm:text-3xl"
-  //     : "text-[2rem] sm:text-4xl";
-
   const textSize =
-  size === "lg"
-    ? "text-xl sm:text-2xl lg:text-3xl"
-    : size === "md"
-    ? "text-base sm:text-lg lg:text-xl"
-    : "text-2xl sm:text-3xl"
+    size === "lg"
+      ? "text-xl sm:text-2xl lg:text-3xl"
+      : size === "md"
+      ? "text-base sm:text-lg lg:text-xl"
+      : "text-2xl sm:text-3xl";
+
+  const hasValue = value !== null && value !== undefined;
 
   return (
     <div
@@ -62,17 +69,15 @@ export default function PriceCell({ value, subLabel, size = "lg" }) {
             font-extrabold
             tracking-tight
             leading-none
-            bg-gradient-to-b
-            from-yellow-100
-            via-yellow-300
-            to-yellow-500
-            bg-clip-text
-            text-transparent
-            drop-shadow-[0_2px_10px_rgba(255,215,0,0.25)]
+            ${
+              hasValue
+                ? "bg-gradient-to-b from-yellow-100 via-yellow-300 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(255,215,0,0.25)]"
+                : "text-gold-500/60"
+            }
             ${textSize}
           `}
         >
-          ₹{value.toLocaleString("en-IN")}
+          {hasValue ? `₹${value.toLocaleString("en-IN")}` : "-"}
         </span>
       </div>
 

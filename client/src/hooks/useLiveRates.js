@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { initialRates } from "../data/mockRates.js";
 import { API_BASE_URL } from "../config/api.js";
+import { pollAligned } from "../utils/pollAligned.js";
 
 /**
  * useLiveRates
@@ -8,6 +9,12 @@ import { API_BASE_URL } from "../config/api.js";
  * Polls OUR OWN backend's public rates endpoint
  * (GET /api/rates) instead of calling the free
  * gold-api.com feed directly from the browser.
+ *
+ * Uses pollAligned() so this refreshes on wall-clock
+ * boundaries (e.g. always at :00/:15/:30/:45) — that way it
+ * stays in sync with the admin panel's polling too, instead
+ * of each page drifting on its own independent 15s timer
+ * based on when it happened to load.
  *
  * The backend is now the single source of truth: it fetches
  * gold-api.com itself, calculates Free API Rate + Kalash
@@ -46,12 +53,11 @@ export function useLiveRates() {
       }
     }
 
-    fetchRates();
-    const intervalId = setInterval(fetchRates, REFRESH_INTERVAL_MS);
+    const stopPolling = pollAligned(fetchRates, REFRESH_INTERVAL_MS);
 
     return () => {
       cancelled = true;
-      clearInterval(intervalId);
+      stopPolling();
     };
   }, []);
 

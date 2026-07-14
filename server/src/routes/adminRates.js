@@ -5,15 +5,15 @@ import { fetchRawKalashFeed } from "../services/kalashRateFetcher.js";
 /**
  * Admin routes
  * ------------------------------------------------------
- * GET   /api/admin/rates                — list all commodities with
- *                                          kalashRate, yourRate, isManualOverride
- * PUT   /api/admin/rates/:slug          — manually set yourRate
- *                                          (flips isManualOverride to true —
- *                                          the background job then leaves
- *                                          this commodity's yourRate alone)
- * POST  /api/admin/rates/:slug/reset    — clears isManualOverride so
- *                                          yourRate goes back to
- *                                          auto-following (kalashRate - 100)
+ * GET   /api/admin/rates                  — list all commodities
+ * PUT   /api/admin/rates/:slug            — manually set yourRate
+ *                                            (flips isManualOverride to true)
+ * POST  /api/admin/rates/:slug/reset      — clears isManualOverride,
+ *                                            goes back to auto-following
+ * POST  /api/admin/rates/:slug/toggle     — flips isDisabled; when true,
+ *                                            the public page shows "-"
+ *                                            for this commodity regardless
+ *                                            of kalashRate/yourRate
  *
  * NOTE: no authentication yet — that's Phase 4 ("admin auth").
  * Do not expose this router publicly without adding auth first.
@@ -85,13 +85,36 @@ router.post("/admin/rates/:slug/reset", async (req, res) => {
     }
 
     commodity.isManualOverride = false;
-    // Apply immediately rather than waiting for the next job tick
-    commodity.yourRate = Math.max(0, commodity.kalashRate - YOUR_RATE_DISCOUNT);
+    // Apply immediately rather than waiting for the next job tick.
+    // If Kalash has no live rate right now, go back to "-" (null)
+    // rather than computing off a stale number.
+    commodity.yourRate =
+      commodity.kalashRate !== null && commodity.kalashRate !== undefined
+        ? Math.max(0, commodity.kalashRate - YOUR_RATE_DISCOUNT)
+        : null;
     await commodity.save();
 
     res.json(commodity);
   } catch (err) {
     res.status(500).json({ error: "Failed to reset rate" });
+  }
+});
+
+router.post("/admin/rates/:slug/toggle", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const commodity = await Rate.findOne({ slug });
+
+    if (!commodity) {
+      return res.status(404).json({ error: `No commodity found with slug "${slug}"` });
+    }
+
+    commodity.isDisabled = !commodity.isDisabled;
+    await commodity.save();
+
+    res.json(commodity);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to toggle rate" });
   }
 });
 
