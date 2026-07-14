@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
-import { Save, ShieldCheck } from "lucide-react";
+import { RotateCcw, Save, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "../config/api.js";
 
 /**
  * AdminPanel
  * ------------------------------------------------------
- * Shows every commodity with four rates side by side:
- *   Free API Rate  — raw calculated rate from gold-api.com
- *   Online Rate    — Free API Rate x calibration constant
- *   Kalash Rate    — fetched live from Kalash Gold's own feed
- *   Your Rate      — editable; what actually gets shown on
- *                    the public Live Rates page
+ * Shows every commodity with two rates side by side:
+ *   Kalash Rate — fetched live from Kalash Gold's own feed
+ *   Your Rate   — what actually gets shown on the public
+ *                 Live Rates page
+ *
+ * By default, Your Rate auto-follows (Kalash Rate - ₹100)
+ * every time the background job refreshes. The moment an
+ * admin manually saves a value here, that commodity switches
+ * to "manual override" mode and stops auto-following — until
+ * the admin hits Reset, which clears the override and snaps
+ * Your Rate straight back to (Kalash Rate - ₹100).
  *
  * NOTE: no login/auth yet — this route is unprotected until
  * Phase 4 ("admin authentication") is built. Don't deploy
@@ -20,7 +25,7 @@ import { API_BASE_URL } from "../config/api.js";
 export default function AdminPanel() {
   const [commodities, setCommodities] = useState([]);
   const [draftValues, setDraftValues] = useState({}); // slug -> string being typed
-  const [savingSlug, setSavingSlug] = useState(null);
+  const [busySlug, setBusySlug] = useState(null); // slug currently saving or resetting
   const [error, setError] = useState(null);
 
   async function loadCommodities() {
@@ -54,7 +59,7 @@ export default function AdminPanel() {
       return;
     }
 
-    setSavingSlug(slug);
+    setBusySlug(slug);
     try {
       const res = await fetch(`${API_BASE_URL}/admin/rates/${slug}`, {
         method: "PUT",
@@ -70,7 +75,26 @@ export default function AdminPanel() {
     } catch (err) {
       setError(err.message);
     } finally {
-      setSavingSlug(null);
+      setBusySlug(null);
+    }
+  }
+
+  async function handleReset(slug) {
+    setBusySlug(slug);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/rates/${slug}/reset`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to reset rate");
+
+      const updated = await res.json();
+      setCommodities((prev) => prev.map((c) => (c.slug === slug ? updated : c)));
+      setDraftValues((prev) => ({ ...prev, [slug]: "" }));
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusySlug(null);
     }
   }
 
@@ -97,12 +121,6 @@ export default function AdminPanel() {
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Commodity
                 </th>
-                {/* <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
-                  Free API Rate
-                </th> */}
-                <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
-                  Online Rate
-                </th>
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Kalash Rate
                 </th>
@@ -110,21 +128,27 @@ export default function AdminPanel() {
                   Your Rate
                 </th>
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
-                  Save
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody>
               {commodities.map((c) => (
                 <tr key={c.slug} className="border-t border-gold-700/20 bg-brown-900/40">
-                  <td className="px-4 py-3 font-display font-semibold uppercase text-gold-100">
-                    {c.name}
-                  </td>
-                  {/* <td className="px-4 py-3 font-price text-gold-100/80">
-                    &#8377;{c.freeApiRate.toLocaleString("en-IN")}
-                  </td> */}
-                  <td className="px-4 py-3 font-price text-gold-100/80">
-                    &#8377;{c.onlineRate.toLocaleString("en-IN")}
+                  <td className="px-4 py-3">
+                    <span className="font-display font-semibold uppercase text-gold-100">
+                      {c.name}
+                    </span>
+                    {!c.isManualOverride && (
+                      <span className="ml-2 rounded-full bg-emerald-500/15 px-2 py-0.5 font-body text-[11px] text-emerald-300">
+                        Auto (Kalash &minus; &#8377;100)
+                      </span>
+                    )}
+                    {c.isManualOverride && (
+                      <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 font-body text-[11px] text-amber-300">
+                        Manual
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 font-price text-gold-100/80">
                     &#8377;{c.kalashRate.toLocaleString("en-IN")}
@@ -139,14 +163,29 @@ export default function AdminPanel() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => handleSave(c.slug)}
-                      disabled={savingSlug === c.slug}
-                      className="flex items-center gap-1 rounded-md bg-gold-500 px-3 py-1.5 font-display text-xs font-semibold uppercase text-brown-950 transition-opacity hover:bg-gold-400 disabled:opacity-50"
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                      {savingSlug === c.slug ? "Saving..." : "Save"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleSave(c.slug)}
+                        disabled={busySlug === c.slug}
+                        className="flex items-center gap-1 rounded-md bg-gold-500 px-3 py-1.5 font-display text-xs font-semibold uppercase text-brown-950 transition-opacity hover:bg-gold-400 disabled:opacity-50"
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                        {busySlug === c.slug ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        onClick={() => handleReset(c.slug)}
+                        disabled={busySlug === c.slug || !c.isManualOverride}
+                        title={
+                          c.isManualOverride
+                            ? "Go back to auto-following Kalash Rate - ₹100"
+                            : "Already auto-following"
+                        }
+                        className="flex items-center gap-1 rounded-md border border-gold-600/40 px-3 py-1.5 font-display text-xs font-semibold uppercase text-gold-300 transition-opacity hover:border-gold-400 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Reset
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

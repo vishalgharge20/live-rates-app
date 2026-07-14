@@ -48,20 +48,40 @@ export async function fetchRawKalashFeed() {
 }
 
 /**
- * Recursively searches a parsed object for the first array of
- * row-like objects (each with several fields) — this sidesteps
- * needing to know the exact wrapper tag names (e.g. NewDataSet.Table).
+ * Recursively searches a parsed object for the array of real data
+ * rows — sidesteps needing to know the exact wrapper tag names
+ * (e.g. NewDataSet.Table).
+ *
+ * Uses a STRICT heuristic to avoid accidentally matching an
+ * <xs:schema> metadata block (common in ADO.NET XML exports,
+ * often appearing BEFORE the actual data in document order):
+ * a real row must have at least 5 fields, and its first field
+ * must parse as a plain number (the row ID, e.g. "2853") — schema
+ * definition nodes don't look like that.
  */
-function findRowsArray(node) {
-  if (Array.isArray(node) && node.length > 0 && typeof node[0] === "object") {
+function looksLikeDataRow(item) {
+  if (!item || typeof item !== "object") return false;
+  const values = Object.values(item);
+  if (values.length < 5) return false;
+  const firstValue = String(values[0]).trim();
+  return firstValue !== "" && !Number.isNaN(Number(firstValue));
+}
+
+function findRowsArray(node, keyHint = "") {
+  // Skip XML schema metadata blocks outright, wherever they appear
+  if (/^xs:|^\?xml/i.test(keyHint)) return null;
+
+  if (Array.isArray(node) && node.length > 0 && node.every(looksLikeDataRow)) {
     return node;
   }
+
   if (node && typeof node === "object") {
-    for (const value of Object.values(node)) {
-      const found = findRowsArray(value);
+    for (const [key, value] of Object.entries(node)) {
+      const found = findRowsArray(value, key);
       if (found) return found;
     }
   }
+
   return null;
 }
 

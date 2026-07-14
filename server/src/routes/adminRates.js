@@ -5,15 +5,21 @@ import { fetchRawKalashFeed } from "../services/kalashRateFetcher.js";
 /**
  * Admin routes
  * ------------------------------------------------------
- * GET  /api/admin/rates          — list all commodities with
- *                                   freeApiRate, kalashRate, yourRate
- * PUT  /api/admin/rates/:slug    — update a single commodity's
- *                                   yourRate (and optionally status)
+ * GET   /api/admin/rates                — list all commodities with
+ *                                          kalashRate, yourRate, isManualOverride
+ * PUT   /api/admin/rates/:slug          — manually set yourRate
+ *                                          (flips isManualOverride to true —
+ *                                          the background job then leaves
+ *                                          this commodity's yourRate alone)
+ * POST  /api/admin/rates/:slug/reset    — clears isManualOverride so
+ *                                          yourRate goes back to
+ *                                          auto-following (kalashRate - 100)
  *
  * NOTE: no authentication yet — that's Phase 4 ("admin auth").
  * Do not expose this router publicly without adding auth first.
  * ------------------------------------------------------
  */
+const YOUR_RATE_DISCOUNT = 100;
 const router = Router();
 
 router.get("/admin/rates", async (_req, res) => {
@@ -51,7 +57,10 @@ router.put("/admin/rates/:slug", async (req, res) => {
     }
 
     const update = {};
-    if (yourRate !== undefined) update.yourRate = yourRate;
+    if (yourRate !== undefined) {
+      update.yourRate = yourRate;
+      update.isManualOverride = true; // stop auto-following Kalash rate
+    }
     if (status !== undefined) update.status = status;
 
     const updated = await Rate.findOneAndUpdate({ slug }, update, { new: true });
@@ -63,6 +72,26 @@ router.put("/admin/rates/:slug", async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: "Failed to update rate" });
+  }
+});
+
+router.post("/admin/rates/:slug/reset", async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const commodity = await Rate.findOne({ slug });
+
+    if (!commodity) {
+      return res.status(404).json({ error: `No commodity found with slug "${slug}"` });
+    }
+
+    commodity.isManualOverride = false;
+    // Apply immediately rather than waiting for the next job tick
+    commodity.yourRate = Math.max(0, commodity.kalashRate - YOUR_RATE_DISCOUNT);
+    await commodity.save();
+
+    res.json(commodity);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to reset rate" });
   }
 });
 

@@ -43,8 +43,12 @@ const rateSchema = new mongoose.Schema(
     onlineRate: { type: Number, default: 0 }, // freeApiRate x calibration constant
     kalashRate: { type: Number, default: 0 }, // fetched live from Kalash Gold's feed
 
-    // Admin-controlled price actually shown on the public page
+    // Admin-controlled price actually shown on the public page.
+    // Defaults to auto-following (kalashRate - 100) until an admin
+    // manually saves a value, at which point isManualOverride flips
+    // to true and the background job stops touching yourRate.
     yourRate: { type: Number, default: 0 },
+    isManualOverride: { type: Boolean, default: false },
 
     // Reference point for the trend indicator on the public page
     previousClose: { type: Number, default: 0 },
