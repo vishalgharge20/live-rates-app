@@ -52,7 +52,7 @@ export default function App() {
                 prices people actually care about. */}
             <div className="px-2 pb-4 sm:px-6 sm:pb-6">
               <p className="mb-2 font-body text-[11px] uppercase tracking-[0.15em] text-gold-500/60 sm:text-xs">
-                Reference Spot Rates
+                Spot Rates
               </p>
               <SpotRatesBar />
             </div>
