@@ -140,7 +140,7 @@ export default function AdminPanel() {
                   Commodity
                 </th>
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
-                  Kalash Rate
+                  Refrence Rate
                 </th>
                 <th className="px-4 py-3 font-display text-xs uppercase tracking-wider text-gold-400">
                   Your Rate
@@ -173,11 +173,11 @@ export default function AdminPanel() {
                             Disabled
                           </span>
                         )}
-                        {!c.isDisabled && !c.isManualOverride && (
+                        {/* {!c.isDisabled && !c.isManualOverride && (
                           <span className="ml-2 rounded-full bg-emerald-500/15 px-2 py-0.5 font-body text-[11px] text-emerald-300">
                             Auto (Kalash &minus; &#8377;100)
                           </span>
-                        )}
+                        )} */}
                         {!c.isDisabled && c.isManualOverride && (
                           <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 font-body text-[11px] text-amber-300">
                             Manual
