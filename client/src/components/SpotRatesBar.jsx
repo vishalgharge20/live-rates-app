@@ -38,8 +38,22 @@ export default function SpotRatesBar() {
       }
     }
 
-    const stopPolling = pollAligned(fetchSpotRates, 15000);
-    return () => stopPolling();
+    const stopPolling = pollAligned(fetchSpotRates, 7000);
+
+    // Browsers throttle/suspend setInterval in background tabs, so the
+    // aligned poll can silently stop firing while the tab is hidden.
+    // Force an immediate refetch when the tab becomes visible again.
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        fetchSpotRates();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   return (

@@ -42,8 +42,22 @@ export default function AdminPanel() {
   }
 
   useEffect(() => {
-    const stopPolling = pollAligned(loadCommodities, 15000);
-    return () => stopPolling();
+    const stopPolling = pollAligned(loadCommodities, 7000);
+
+    // Browsers throttle/suspend setInterval in background tabs, so the
+    // aligned poll can silently stop firing while the tab is hidden.
+    // Force an immediate refetch when the tab becomes visible again.
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        loadCommodities();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   function handleDraftChange(slug, value) {
@@ -173,11 +187,6 @@ export default function AdminPanel() {
                             Disabled
                           </span>
                         )}
-                        {/* {!c.isDisabled && !c.isManualOverride && (
-                          <span className="ml-2 rounded-full bg-emerald-500/15 px-2 py-0.5 font-body text-[11px] text-emerald-300">
-                            Auto (Kalash &minus; &#8377;100)
-                          </span>
-                        )} */}
                         {!c.isDisabled && c.isManualOverride && (
                           <span className="ml-2 rounded-full bg-amber-400/15 px-2 py-0.5 font-body text-[11px] text-amber-300">
                             Manual

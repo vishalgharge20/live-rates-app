@@ -7,9 +7,9 @@ import logo from "../../src/SR-logo.png";
  */
 export default function ShopBanner() {
   return (
-    <div className="mb-3 flex w-full max-w-[1200px] flex-col items-center text-center sm:mb-8">
+    <div className="mb-3 flex w-full max-w-[1200px] flex-col items-center text-center sm:mb-4">
       {/* Logo + Flourishes */}
-      <div className="flex items-center justify-center gap-3 sm:gap-5">
+      <div className="flex items-center justify-center gap-3 sm:gap-4">
         <Flourish />
 
         {/* Logo */}
@@ -23,11 +23,11 @@ export default function ShopBanner() {
 
           drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]
 
-          sm:h-40
-          sm:w-40
+          sm:h-24
+          sm:w-24
 
-          lg:h-48
-          lg:w-48
+          lg:h-40
+          lg:w-40
         "
       />
 
@@ -49,9 +49,9 @@ export default function ShopBanner() {
 
           drop-shadow-[0_3px_8px_rgba(0,0,0,0.6)]
 
-          sm:mt-4
-          sm:text-5xl
-          lg:text-6xl
+          sm:mt-2
+          sm:text-3xl
+          lg:text-4xl
         "
       >
         Siddhanath{" "}
@@ -66,26 +66,6 @@ export default function ShopBanner() {
         <span className="h-2 w-2 rotate-45 bg-gold-400" />
         <span className="h-px w-24 bg-gradient-to-l from-transparent to-gold-500/70" />
       </div>
-
-      {/* Tagline */}
-      {/* <p
-        className="
-          mt-1
-          font-body
-          italic
-
-          text-[11px]
-          tracking-[0.18em]
-
-          text-gold-300/70
-
-          sm:mt-3
-          sm:text-base
-          sm:tracking-[0.28em]
-        "
-      >
-        Bullion Dealers &amp; Refiners
-      </p> */}
     </div>
   );
 }

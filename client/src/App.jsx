@@ -7,30 +7,28 @@ import Footer from "./components/Footer.jsx";
 import MandalaBackground from "./components/MandalaBackground.jsx";
 import { useLiveRates } from "./hooks/useLiveRates.js";
 
-/**
- * App
- * ------------------------------------------------------
- * Root component for the Live Rates page.
- *
- * Rates now come from useLiveRates(), which polls the free
- * Gold API (gold-api.com) for real XAU/XAG spot prices every
- * 30 seconds and derives Buy/Sell for each commodity — no
- * more randomly-simulated mock data.
- * ------------------------------------------------------
- */
 export default function App() {
   const { rates, error } = useLiveRates();
 
   return (
-    <div className="relative flex min-h-screen w-full items-center justify-center bg-brown-950 px-2 py-3 sm:px-6 sm:py-8">
+    <div className="relative flex min-h-screen w-full flex-col items-center bg-brown-950 px-2 py-3 sm:px-6 sm:py-8">
       {/* Tiled mandala texture across the whole page */}
       <MandalaBackground />
 
       {/* Ambient gold glow for depth */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,_rgba(200,145,42,0.10),_transparent_55%)]" />
 
+      {/* Sticky banner box — same framed-card style as the rate card
+          below (rounded outer hairline + inset gold-bordered panel) */}
+      <div className="sticky top-0 z-50 w-full max-w-[1200px] rounded-2xl border border-gold-600/30 bg-brown-950 p-[3px] shadow-premium">
+        <div className="overflow-hidden rounded-[0.9rem] border-2 border-gold-500/50 bg-brown-900">
+          <ShopBanner />
+        </div>
+      </div>
+
       <div className="relative flex w-full max-w-[1200px] flex-col items-center">
-        <ShopBanner />
+        {/* Small gap between the sticky banner box and the rate card box */}
+        <div className="h-2 sm:h-3" />
 
         {/* Outer gold hairline frame with a small inset gap, then the card itself */}
         <div className="w-full rounded-2xl border border-gold-600/30 p-[3px] shadow-premium">
@@ -46,22 +44,11 @@ export default function App() {
 
             <RateTable rates={rates} />
 
-            {/* Reference-only spot rates (GOLD($)/SILVER($)/INR(₹)) —
-                kept visually secondary to the main commodity table
-                above: smaller heading, muted label, tucked below the
-                prices people actually care about. */}
-            <div className="px-2 pb-4 sm:px-6 sm:pb-6">
-              <p className="mb-2 font-body text-[11px] uppercase tracking-[0.15em] text-gold-500/60 sm:text-xs">
-                Spot Rates
-              </p>
+            <div className="px-2 pb-4 pt-0.5 sm:px-6 sm:pb-6">
               <SpotRatesBar />
             </div>
 
-            {/* Full footer on tablet/desktop; hidden on mobile to keep the
-                page fitting a single screen without scrolling */}
-            {/* <div className="hidden sm:block"> */}
             <Footer />
-            {/* </div> */}
           </div>
         </div>
       </div>

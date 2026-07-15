@@ -39,7 +39,7 @@ export default function RateTable({ rates }) {
       </div>
 
       {/* Mobile */}
-      <div className="flex flex-col gap-6 sm:hidden">
+      <div className="flex flex-col gap-3 sm:hidden">
         {rates
         .filter((rate) => rate.name !== "Gold 999 RTGS")
         .map((rate) => (

@@ -3,30 +3,9 @@ import { initialRates } from "../data/mockRates.js";
 import { API_BASE_URL } from "../config/api.js";
 import { pollAligned } from "../utils/pollAligned.js";
 
-/**
- * useLiveRates
- * ------------------------------------------------------
- * Polls OUR OWN backend's public rates endpoint
- * (GET /api/rates) instead of calling the free
- * gold-api.com feed directly from the browser.
- *
- * Uses pollAligned() so this refreshes on wall-clock
- * boundaries (e.g. always at :00/:15/:30/:45) — that way it
- * stays in sync with the admin panel's polling too, instead
- * of each page drifting on its own independent 15s timer
- * based on when it happened to load.
- *
- * The backend is now the single source of truth: it fetches
- * gold-api.com itself, calculates Free API Rate + Kalash
- * Rate, and lets an admin override the final "Your Rate"
- * shown here — see live-rates-backend/.
- * ------------------------------------------------------
- */
-
-const REFRESH_INTERVAL_MS = 15000;
+const REFRESH_INTERVAL_MS = 7000;
 
 export function useLiveRates() {
-  // Shown immediately while the first fetch is in flight
   const [rates, setRates] = useState(initialRates);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -45,8 +24,6 @@ export function useLiveRates() {
         setRates(data);
         setError(null);
       } catch (err) {
-        // Keep showing the last known-good rates on failure; just
-        // surface the error so the UI can show a small notice.
         if (!cancelled) setError(err.message);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -55,9 +32,20 @@ export function useLiveRates() {
 
     const stopPolling = pollAligned(fetchRates, REFRESH_INTERVAL_MS);
 
+    // Browsers throttle/suspend setInterval in background tabs, so the
+    // aligned poll can silently stop firing while the tab is hidden.
+    // Force an immediate refetch when the tab becomes visible again.
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        fetchRates();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       cancelled = true;
       stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 

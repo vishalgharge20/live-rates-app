@@ -8,7 +8,7 @@ import ShineOverlay from "./ShineOverlay.jsx";
  */
 export default function Header() {
   return (
-    <div className="relative overflow-hidden border-b-2 border-gold-600/40 bg-gradient-to-r from-brown-900 via-brown-800 to-brown-900 px-4 py-5 sm:px-8 sm:py-5">
+    <div className="relative overflow-hidden border-b-2 border-gold-600/40 bg-gradient-to-r from-brown-900 via-brown-800 to-brown-900 px-4 py-5 sm:px-8 sm:py-2.5">
       <ShineOverlay />
 
       {/* Decorative gold glow */}
@@ -24,8 +24,8 @@ export default function Header() {
             text-gold-200
 
             text-xl
-            sm:text-3xl
-            lg:text-4xl
+            sm:text-xl
+            lg:text-2xl
           "
         >
           Live <span className="text-gold-400">Gold &amp; Silver</span> Rates

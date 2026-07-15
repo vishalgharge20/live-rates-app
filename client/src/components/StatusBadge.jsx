@@ -53,9 +53,9 @@ export default function StatusBadge({ status }) {
         ${border}
       `}
     >
-      <span
+      {/* <span
         className={`h-2.5 w-2.5 rounded-full ${dot} animate-pulse`}
-      />
+      /> */}
 
       <Icon
         className={`h-3.5 w-3.5 ${text}`}
