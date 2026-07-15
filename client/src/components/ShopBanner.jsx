@@ -37,7 +37,7 @@ export default function ShopBanner() {
       {/* Shop Name */}
       <h1
         className="
-          mt-3
+          mt-1
           font-display
           font-bold
           leading-none
