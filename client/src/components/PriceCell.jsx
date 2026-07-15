@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUp } from "lucide-react";
  * ------------------------------------------------------
  * Premium jewellery style price display.
  *
- * When `value` is null/undefined (rate disabled, or Kalash
+ * When `value` is null/undefined (rate disabled,
  * currently has no live data for this commodity), renders a
  * plain "-" instead of crashing on `null.toLocaleString()".
  * No flash animation runs for that transition either — flash

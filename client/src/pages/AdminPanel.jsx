@@ -7,16 +7,16 @@ import { pollAligned } from "../utils/pollAligned.js";
  * AdminPanel
  * ------------------------------------------------------
  * Shows every commodity with two rates side by side:
- *   Kalash Rate — fetched live from Kalash Gold's own feed
+ * 
  *   Your Rate   — what actually gets shown on the public
  *                 Live Rates page
  *
- * By default, Your Rate auto-follows (Kalash Rate - ₹100)
+
  * every time the background job refreshes. The moment an
  * admin manually saves a value here, that commodity switches
  * to "manual override" mode and stops auto-following — until
  * the admin hits Reset, which clears the override and snaps
- * Your Rate straight back to (Kalash Rate - ₹100).
+
  *
  * NOTE: no login/auth yet — this route is unprotected until
  * Phase 4 ("admin authentication") is built. Don't deploy
@@ -168,7 +168,7 @@ export default function AdminPanel() {
               {commodities
                 .filter((c) => c.slug !== "gold-999-rtgs")
                 .map((c) => {
-                  const hasKalashRate = c.kalashRate !== null && c.kalashRate !== undefined;
+                  const hasKRate = c.Rate !== null && c.kRate !== undefined;
                   const hasYourRate = c.yourRate !== null && c.yourRate !== undefined;
 
                   return (
@@ -194,7 +194,7 @@ export default function AdminPanel() {
                         )}
                       </td>
                       <td className="px-4 py-3 font-price text-gold-100/80">
-                        {hasKalashRate ? `₹${c.kalashRate.toLocaleString("en-IN")}` : "-"}
+                        {hasKRate ? `₹${c.kRate.toLocaleString("en-IN")}` : "-"}
                       </td>
                       <td className="px-4 py-3">
                         <input
@@ -220,7 +220,7 @@ export default function AdminPanel() {
                             disabled={busySlug === c.slug || !c.isManualOverride}
                             title={
                               c.isManualOverride
-                                ? "Go back to auto-following Kalash Rate - ₹100"
+                                ? "Go back to auto-following K Rate - ₹100"
                                 : "Already auto-following"
                             }
                             className="flex items-center gap-1 rounded-md border border-gold-600/40 px-3 py-1.5 font-display text-xs font-semibold uppercase text-gold-300 transition-opacity hover:border-gold-400 disabled:cursor-not-allowed disabled:opacity-40"

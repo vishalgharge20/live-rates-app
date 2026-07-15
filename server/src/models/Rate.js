@@ -9,12 +9,12 @@ import mongoose from "mongoose";
  *   freeApiRate  — raw calculated price from the free
  *                  gold-api.com spot price (auto-updated by
  *                  the background job, admin cannot edit)
- *   kalashRate   — freeApiRate with a calibration factor
+ *   kRate   — freeApiRate with a calibration factor
  *                  applied to approximate real Indian
  *                  bullion-market rates (auto-updated too)
  *   yourRate     — the rate the admin has actually set for
  *                  display on the public site. Defaults to
- *                  kalashRate until the admin overrides it.
+ *                  kRate until the admin overrides it.
  *
  * `sell` is derived from `yourRate` with a small spread
  * rather than stored separately, since the admin only edits
@@ -33,21 +33,21 @@ const rateSchema = new mongoose.Schema(
     purity: { type: Number, required: true },
     spreadPct: { type: Number, required: true, default: 0.002 },
 
-    // The exact item name used for this commodity inside Kalash
+    // The exact item name used for this commodity inside K
     // Gold's live feed (matched by name, e.g. "GOLD 999 RTGS",
-    // "Gold MKT 999 [FT]" — see kalashRateFetcher.js / seed.js)
+   
     kalashItemName: { type: String, default: "" },
 
     // Auto-calculated prices (written by the background job)
     freeApiRate: { type: Number, default: 0 }, // raw gold-api.com price
     onlineRate: { type: Number, default: 0 }, // freeApiRate x calibration constant
-    // null = "no live data right now" (Kalash feed didn't have this
+    // null = "no live data right now" (K feed didn't have this
     // item this tick, or it hasn't been fetched yet) — distinct from
     // a real rate, which is always a positive number.
     kalashRate: { type: Number, default: null },
 
     // Admin-controlled price actually shown on the public page.
-    // Defaults to auto-following (kalashRate - 100) until an admin
+    // Defaults to auto-following (kRate - 100) until an admin
     // manually saves a value, at which point isManualOverride flips
     // to true and the background job stops touching yourRate.
     // null = nothing to show ("-") — either no live data yet, or
@@ -56,7 +56,7 @@ const rateSchema = new mongoose.Schema(
     isManualOverride: { type: Boolean, default: false },
 
     // Admin can hard-disable a commodity — public page always shows
-    // "-" for it regardless of what Kalash or the admin's saved
+    // "-" for it regardless of what K or the admin's saved
     // rate say, until re-enabled.
     isDisabled: { type: Boolean, default: false },
 

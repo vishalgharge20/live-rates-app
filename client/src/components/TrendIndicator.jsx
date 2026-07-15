@@ -53,7 +53,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
  *
  * Renders nothing (returns null) when there's no current
  * price to compare — e.g. the commodity is disabled, or
- * Kalash currently has no live data for it. Avoids crashing
+ * currently has no live data for it. Avoids crashing
  * on `null - previousClose` producing NaN.
  * ------------------------------------------------------
  */
