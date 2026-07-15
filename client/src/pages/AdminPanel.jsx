@@ -1,37 +1,57 @@
 import { useEffect, useState } from "react";
-import { Ban, CheckCircle2, RotateCcw, Save, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Ban, CheckCircle2, LogOut, RotateCcw, Save, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "../config/api.js";
 import { pollAligned } from "../utils/pollAligned.js";
 
 /**
  * AdminPanel
  * ------------------------------------------------------
- * Shows every commodity with two rates side by side:
- * 
- *   Your Rate   — what actually gets shown on the public
- *                 Live Rates page
- *
-
- * every time the background job refreshes. The moment an
- * admin manually saves a value here, that commodity switches
- * to "manual override" mode and stops auto-following — until
- * the admin hits Reset, which clears the override and snaps
-
- *
- * NOTE: no login/auth yet — this route is unprotected until
- * Phase 4 ("admin authentication") is built. Don't deploy
- * this publicly as-is.
+ * Protected by a shared-password login (see AdminLogin.jsx).
+ * Reads the JWT from localStorage("adminToken") and attaches
+ * it as Authorization: Bearer <token> on every admin request.
+ * If the token is missing on mount, or any request comes back
+ * 401 (missing/expired/invalid token), the token is cleared
+ * and the user is redirected to /admin/login.
  * ------------------------------------------------------
  */
 export default function AdminPanel() {
   const [commodities, setCommodities] = useState([]);
-  const [draftValues, setDraftValues] = useState({}); // slug -> string being typed
-  const [busySlug, setBusySlug] = useState(null); // slug currently saving or resetting
+  const [draftValues, setDraftValues] = useState({});
+  const [busySlug, setBusySlug] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  function getToken() {
+    return localStorage.getItem("adminToken");
+  }
+
+  function logout() {
+    localStorage.removeItem("adminToken");
+    navigate("/admin/login");
+  }
+
+  function authHeaders() {
+    return { Authorization: `Bearer ${getToken()}` };
+  }
+
+  async function handleAuthedFetch(url, options = {}) {
+    const res = await fetch(url, {
+      ...options,
+      headers: { ...(options.headers || {}), ...authHeaders() },
+    });
+
+    if (res.status === 401) {
+      logout();
+      throw new Error("Session expired — please log in again.");
+    }
+
+    return res;
+  }
 
   async function loadCommodities() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/rates`);
+      const res = await handleAuthedFetch(`${API_BASE_URL}/admin/rates`);
       if (!res.ok) throw new Error("Failed to load admin rates");
       const data = await res.json();
       setCommodities(data);
@@ -42,11 +62,13 @@ export default function AdminPanel() {
   }
 
   useEffect(() => {
+    if (!getToken()) {
+      navigate("/admin/login");
+      return;
+    }
+
     const stopPolling = pollAligned(loadCommodities, 7000);
 
-    // Browsers throttle/suspend setInterval in background tabs, so the
-    // aligned poll can silently stop firing while the tab is hidden.
-    // Force an immediate refetch when the tab becomes visible again.
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
         loadCommodities();
@@ -75,7 +97,7 @@ export default function AdminPanel() {
 
     setBusySlug(slug);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/rates/${slug}`, {
+      const res = await handleAuthedFetch(`${API_BASE_URL}/admin/rates/${slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ yourRate }),
@@ -96,7 +118,7 @@ export default function AdminPanel() {
   async function handleReset(slug) {
     setBusySlug(slug);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/rates/${slug}/reset`, {
+      const res = await handleAuthedFetch(`${API_BASE_URL}/admin/rates/${slug}/reset`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Failed to reset rate");
@@ -115,7 +137,7 @@ export default function AdminPanel() {
   async function handleToggleDisable(slug) {
     setBusySlug(slug);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/rates/${slug}/toggle`, {
+      const res = await handleAuthedFetch(`${API_BASE_URL}/admin/rates/${slug}/toggle`, {
         method: "POST",
       });
       if (!res.ok) throw new Error("Failed to toggle rate");
@@ -133,11 +155,21 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-brown-950 px-4 py-8 sm:px-10">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-6 flex items-center gap-2">
-          <ShieldCheck className="h-6 w-6 text-gold-400" />
-          <h1 className="font-display text-2xl font-bold uppercase text-gold-200">
-            Admin Panel &mdash; Rate Control
-          </h1>
+        <div className="mb-6 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-gold-400" />
+            <h1 className="font-display text-2xl font-bold uppercase text-gold-200">
+              Admin Panel &mdash; Rate Control
+            </h1>
+          </div>
+
+          <button
+            onClick={logout}
+            className="flex items-center gap-1 rounded-md border border-gold-600/40 px-3 py-1.5 font-display text-xs font-semibold uppercase text-gold-300 transition-opacity hover:border-gold-400"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Log Out
+          </button>
         </div>
 
         {error && (
@@ -168,7 +200,7 @@ export default function AdminPanel() {
               {commodities
                 .filter((c) => c.slug !== "gold-999-rtgs")
                 .map((c) => {
-                  const hasKRate = c.Rate !== null && c.kRate !== undefined;
+                  const hasKalashRate = c.kalashRate !== null && c.kalashRate !== undefined;
                   const hasYourRate = c.yourRate !== null && c.yourRate !== undefined;
 
                   return (
@@ -194,7 +226,7 @@ export default function AdminPanel() {
                         )}
                       </td>
                       <td className="px-4 py-3 font-price text-gold-100/80">
-                        {hasKRate ? `₹${c.kRate.toLocaleString("en-IN")}` : "-"}
+                        {hasKalashRate ? `₹${c.kalashRate.toLocaleString("en-IN")}` : "-"}
                       </td>
                       <td className="px-4 py-3">
                         <input
@@ -220,7 +252,7 @@ export default function AdminPanel() {
                             disabled={busySlug === c.slug || !c.isManualOverride}
                             title={
                               c.isManualOverride
-                                ? "Go back to auto-following K Rate - ₹100"
+                                ? "Go back to auto-following Kalash Rate - ₹100"
                                 : "Already auto-following"
                             }
                             className="flex items-center gap-1 rounded-md border border-gold-600/40 px-3 py-1.5 font-display text-xs font-semibold uppercase text-gold-300 transition-opacity hover:border-gold-400 disabled:cursor-not-allowed disabled:opacity-40"
