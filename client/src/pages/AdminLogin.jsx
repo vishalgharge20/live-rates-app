@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "../config/api.js";
@@ -17,6 +17,8 @@ export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const passwordInputRef = useRef(null);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -41,6 +43,8 @@ export default function AdminLogin() {
       navigate("/admin");
     } catch (err) {
       setError(err.message);
+      setPassword(""); // Clear password field
+      passwordInputRef.current?.focus(); // Focus back on input
     } finally {
       setLoading(false);
     }
@@ -68,14 +72,18 @@ export default function AdminLogin() {
         <label className="mb-1 block font-body text-xs uppercase tracking-wider text-gold-400">
           Password
         </label>
+
         <div className="mb-4 flex items-center gap-2 rounded-md border border-gold-600/40 bg-brown-950 px-3 py-2 focus-within:border-gold-400">
           <Lock className="h-4 w-4 text-gold-500/70" />
+
           <input
+            ref={passwordInputRef}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-transparent font-body text-gold-100 outline-none"
             autoFocus
+            autoComplete="current-password"
           />
         </div>
 

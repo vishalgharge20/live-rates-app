@@ -60,7 +60,7 @@ export default function SpotRatesBar() {
     <div className="overflow-hidden rounded-xl border border-gold-700/30">
       <div className="bg-brown-800/90 px-4 py-2.5 sm:px-6">
         <span className="font-display text-xs uppercase tracking-wider text-gold-400">
-          Spot Rate
+          Spot Rates
         </span>
       </div>
       <div className="divide-y divide-gold-700/20">
