@@ -19,7 +19,7 @@ import { pollAligned } from "../utils/pollAligned.js";
  * ------------------------------------------------------
  */
 
-const REFRESH_INTERVAL_MS = 15000;
+const REFRESH_INTERVAL_MS = 7000;
 
 export function useLiveRates() {
   const [rates, setRates] = useState(null);
