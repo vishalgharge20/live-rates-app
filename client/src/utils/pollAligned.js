@@ -12,18 +12,17 @@
  * independent timer.
  *
  * Also re-fires `callback` immediately whenever the page
- * becomes visible again (tab refocused, app reopened from
- * home screen/background, phone unlocked, etc). Mobile
- * browsers aggressively throttle or fully suspend
- * setInterval/setTimeout while a page is backgrounded —
- * especially "Add to Home Screen" apps on iOS — so without
- * this, reopening the app shows stale/dummy data until
- * whatever timer was pending happens to fire (which may be
- * up to `intervalMs` away, or may never fire at all if the
- * timer got suspended).
+ * becomes visible/active again (tab refocused, app reopened
+ * from home screen/background, phone unlocked, network back
+ * online, etc). Mobile browsers — especially iOS Safari
+ * "Add to Home Screen" apps — aggressively suspend
+ * setInterval/setTimeout while a page is backgrounded, and
+ * are inconsistent about which resume event actually fires.
+ * So we listen to several signals at once rather than relying
+ * on just one.
  *
  * Returns a cleanup function that cancels all pending timers
- * and removes the visibility listeners.
+ * and removes the resume listeners.
  * ------------------------------------------------------
  */
 export function pollAligned(callback, intervalMs) {
@@ -49,13 +48,18 @@ export function pollAligned(callback, intervalMs) {
 
   function handleResume() {
     if (cancelled) return;
-    if (document.visibilityState === "visible") {
-      // Fetch immediately on resume, then restart the aligned
-      // schedule from now — don't wait for whatever boundary
-      // was calculated before the page got backgrounded.
-      callback();
-      scheduleAligned();
+    // visibilitychange fires for both "visible" and "hidden" —
+    // only act on the "became visible again" case. The other
+    // listeners (focus/pageshow/online) don't have that ambiguity.
+    if (document.visibilityState !== undefined && document.visibilityState !== "visible") {
+      return;
     }
+
+    // Fetch immediately on resume, then restart the aligned
+    // schedule from now — don't wait for whatever boundary was
+    // calculated before the page got backgrounded/suspended.
+    callback();
+    scheduleAligned();
   }
 
   callback();
@@ -64,6 +68,7 @@ export function pollAligned(callback, intervalMs) {
   document.addEventListener("visibilitychange", handleResume);
   window.addEventListener("focus", handleResume);
   window.addEventListener("pageshow", handleResume);
+  window.addEventListener("online", handleResume);
 
   return () => {
     cancelled = true;
@@ -72,5 +77,6 @@ export function pollAligned(callback, intervalMs) {
     document.removeEventListener("visibilitychange", handleResume);
     window.removeEventListener("focus", handleResume);
     window.removeEventListener("pageshow", handleResume);
+    window.removeEventListener("online", handleResume);
   };
 }
