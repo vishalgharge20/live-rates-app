@@ -29,7 +29,15 @@ export default function App() {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,_rgba(200,145,42,0.10),_transparent_55%)]" />
 
       <div className="relative flex w-full max-w-[1200px] flex-col items-center">
-        <ShopBanner />
+        {/* Sticky banner box */}
+        <div className="sticky top-0 z-50 w-full max-w-[1200px] rounded-2xl border border-gold-600/30 bg-brown-950 p-[3px] shadow-premium">
+          <div className="overflow-hidden rounded-[0.9rem] border-2 border-gold-500/50 bg-brown-900">
+            <ShopBanner />
+          </div>
+        </div>
+
+        {/* Small gap between banner and rate card */}
+        <div className="h-2 sm:h-3" />
 
         <div className="w-full rounded-2xl border border-gold-600/30 p-[3px] shadow-premium">
           <div className="overflow-hidden rounded-[0.9rem] border-2 border-gold-500/50 bg-brown-900">
