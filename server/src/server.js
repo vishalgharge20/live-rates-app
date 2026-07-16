@@ -18,12 +18,13 @@ async function main() {
   app.use(cors());
   app.use(express.json());
 
-  app.use("/api", publicRatesRouter);
+  // Public routes — no auth required
+  app.use("/api", publicRatesRouter); // GET /api/rates, /api/spot-rates
+  app.use("/api", authRoutes); // POST /api/admin/login
 
-  // Login route is public (no token yet); everything else under
-  // /api/admin is protected by adminAuth.
-  app.use("/api", authRoutes);
-  app.use("/api", adminAuth, adminRatesRouter);
+  // Admin routes — adminAuth only guards paths under /api/admin/*,
+  // so it never touches /api/health, /api/rates, /api/admin/login, etc.
+  app.use("/api/admin", adminAuth, adminRatesRouter);
 
   app.get("/", (_req, res) => res.json({ message: "Welcome to the Currency Exchange Rates API" }));
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
@@ -32,6 +33,7 @@ async function main() {
     console.log(`[server] Listening on http://localhost:${PORT}`);
   });
 
+  // Run once immediately on boot, then on the configured interval
   refreshRatesJob();
   setInterval(refreshRatesJob, REFRESH_INTERVAL_MS);
 }

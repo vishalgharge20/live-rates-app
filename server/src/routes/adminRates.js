@@ -5,6 +5,10 @@ import { fetchRawKalashFeed } from "../services/kalashRateFetcher.js";
 /**
  * Admin routes
  * ------------------------------------------------------
+ * Mounted at /api/admin in server.js, behind adminAuth, so
+ * every route here is already protected — no /admin prefix
+ * needed on individual paths.
+ *
  * GET   /api/admin/rates                  — list all commodities
  * PUT   /api/admin/rates/:slug            — manually set yourRate
  *                                            (flips isManualOverride to true)
@@ -14,15 +18,13 @@ import { fetchRawKalashFeed } from "../services/kalashRateFetcher.js";
  *                                            the public page shows "-"
  *                                            for this commodity regardless
  *                                            of kalashRate/yourRate
- *
- * NOTE: no authentication yet — that's Phase 4 ("admin auth").
- * Do not expose this router publicly without adding auth first.
+ * GET   /api/admin/kalash-raw             — debug: raw Kalash feed
  * ------------------------------------------------------
  */
 const YOUR_RATE_DISCOUNT = 100;
 const router = Router();
 
-router.get("/admin/rates", async (_req, res) => {
+router.get("/rates", async (_req, res) => {
   try {
     const commodities = await Rate.find({}).sort({ createdAt: 1 });
     res.json(commodities);
@@ -38,7 +40,7 @@ router.get("/admin/rates", async (_req, res) => {
  * update mapKalashFeedToRates() in kalashRateFetcher.js and each
  * commodity's `kalashItemName` in MongoDB to match.
  */
-router.get("/admin/kalash-raw", async (_req, res) => {
+router.get("/kalash-raw", async (_req, res) => {
   try {
     const raw = await fetchRawKalashFeed();
     res.json(raw);
@@ -47,7 +49,7 @@ router.get("/admin/kalash-raw", async (_req, res) => {
   }
 });
 
-router.put("/admin/rates/:slug", async (req, res) => {
+router.put("/rates/:slug", async (req, res) => {
   try {
     const { slug } = req.params;
     const { yourRate, status } = req.body;
@@ -75,7 +77,7 @@ router.put("/admin/rates/:slug", async (req, res) => {
   }
 });
 
-router.post("/admin/rates/:slug/reset", async (req, res) => {
+router.post("/rates/:slug/reset", async (req, res) => {
   try {
     const { slug } = req.params;
     const commodity = await Rate.findOne({ slug });
@@ -100,7 +102,7 @@ router.post("/admin/rates/:slug/reset", async (req, res) => {
   }
 });
 
-router.post("/admin/rates/:slug/toggle", async (req, res) => {
+router.post("/rates/:slug/toggle", async (req, res) => {
   try {
     const { slug } = req.params;
     const commodity = await Rate.findOne({ slug });
