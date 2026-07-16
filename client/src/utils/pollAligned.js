@@ -11,7 +11,19 @@
  * different times, instead of each drifting on its own
  * independent timer.
  *
- * Returns a cleanup function that cancels all pending timers.
+ * Also re-fires `callback` immediately whenever the page
+ * becomes visible again (tab refocused, app reopened from
+ * home screen/background, phone unlocked, etc). Mobile
+ * browsers aggressively throttle or fully suspend
+ * setInterval/setTimeout while a page is backgrounded —
+ * especially "Add to Home Screen" apps on iOS — so without
+ * this, reopening the app shows stale/dummy data until
+ * whatever timer was pending happens to fire (which may be
+ * up to `intervalMs` away, or may never fire at all if the
+ * timer got suspended).
+ *
+ * Returns a cleanup function that cancels all pending timers
+ * and removes the visibility listeners.
  * ------------------------------------------------------
  */
 export function pollAligned(callback, intervalMs) {
@@ -19,22 +31,46 @@ export function pollAligned(callback, intervalMs) {
   let intervalId;
   let cancelled = false;
 
-  const msIntoCurrentWindow = Date.now() % intervalMs;
-  const msUntilNextBoundary = intervalMs - msIntoCurrentWindow;
+  function scheduleAligned() {
+    clearTimeout(timeoutId);
+    clearInterval(intervalId);
+
+    const msIntoCurrentWindow = Date.now() % intervalMs;
+    const msUntilNextBoundary = intervalMs - msIntoCurrentWindow;
+
+    timeoutId = setTimeout(() => {
+      if (cancelled) return;
+      callback();
+      intervalId = setInterval(() => {
+        if (!cancelled) callback();
+      }, intervalMs);
+    }, msUntilNextBoundary);
+  }
+
+  function handleResume() {
+    if (cancelled) return;
+    if (document.visibilityState === "visible") {
+      // Fetch immediately on resume, then restart the aligned
+      // schedule from now — don't wait for whatever boundary
+      // was calculated before the page got backgrounded.
+      callback();
+      scheduleAligned();
+    }
+  }
 
   callback();
+  scheduleAligned();
 
-  timeoutId = setTimeout(() => {
-    if (cancelled) return;
-    callback();
-    intervalId = setInterval(() => {
-      if (!cancelled) callback();
-    }, intervalMs);
-  }, msUntilNextBoundary);
+  document.addEventListener("visibilitychange", handleResume);
+  window.addEventListener("focus", handleResume);
+  window.addEventListener("pageshow", handleResume);
 
   return () => {
     cancelled = true;
     clearTimeout(timeoutId);
     clearInterval(intervalId);
+    document.removeEventListener("visibilitychange", handleResume);
+    window.removeEventListener("focus", handleResume);
+    window.removeEventListener("pageshow", handleResume);
   };
 }
