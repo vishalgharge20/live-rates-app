@@ -235,7 +235,7 @@ export default function AdminPanel() {
                     placeholder={hasYourRate ? c.yourRate.toLocaleString("en-IN") : "-"}
                     value={draftValues[c.slug] ?? ""}
                     onChange={(e) => handleDraftChange(c.slug, e.target.value)}
-                    className="w-full rounded-md border border-gold-600/40 bg-brown-950 px-3 py-2 font-price text-gold-100 outline-none focus:border-gold-400"
+                    className="w-full rounded-md border border-gold-600/40 bg-brown-950 px-3 py-2 font-price text-gold-100 outline-none placeholder:text-gold-100/30 focus:border-gold-400"
                   />
                 </div>
 
@@ -341,7 +341,7 @@ export default function AdminPanel() {
                         placeholder={hasYourRate ? c.yourRate.toLocaleString("en-IN") : "-"}
                         value={draftValues[c.slug] ?? ""}
                         onChange={(e) => handleDraftChange(c.slug, e.target.value)}
-                        className="w-32 rounded-md border border-gold-600/40 bg-brown-950 px-2 py-1 font-price text-gold-100 outline-none focus:border-gold-400"
+                        className="w-32 rounded-md border border-gold-600/40 bg-brown-950 px-2 py-1 font-price text-gold-100 outline-none placeholder:text-gold-100/30 focus:border-gold-400"
                       />
                     </td>
                     <td className="px-4 py-3">
